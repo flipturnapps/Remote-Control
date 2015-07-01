@@ -103,7 +103,6 @@ public class RCClient extends Socket implements Runnable
 		}
 		fos.flush();
 		fos.close();
-
 	}
 
 
