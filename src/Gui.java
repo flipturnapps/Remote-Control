@@ -20,9 +20,7 @@ public class Gui extends JFrame
 	public void setImage(Image image)
 	{
 		this.image = image;
-		this.setVisible(false);
-		this.setVisible(true);
-		System.out.println("hai");
+		this.repaint();
 	}
 	private class ImagePanel extends JPanel
 	{

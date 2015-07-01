@@ -6,10 +6,24 @@ import java.net.UnknownHostException;
 public class RCMain 
 {
 
-	public static void main(String[] args) throws UnknownHostException, IOException 
+	public static void main(String[] args)
 	{
-		if(args.length > 0)
+		if(args.length <= 0)
 		{
+			System.out.println("Need args!!");
+			return;
+		}
+		boolean isClient = true;
+		try
+		{
+			isClient = 	args[0].replace(".", "~").split("~").length == 4;
+		}
+		catch(Exception ex)
+		{
+			isClient = false;
+		}
+		if(isClient)
+		{		
 			System.out.println("client");
 			while(true)
 			{
@@ -34,7 +48,12 @@ public class RCMain
 		else
 		{
 			System.out.println("server");
-			new RCServer();
+			try {
+				new RCServer(args[0]);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}			
 	}
 	public static byte[] longToBytes(long l)

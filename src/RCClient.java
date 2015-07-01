@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -17,6 +18,7 @@ public class RCClient extends Socket implements Runnable
 
 	private Gui gui;
 	private InputStream inputStream;
+	private PrintWriter writer;
 
 	public RCClient(String ip) throws UnknownHostException, IOException
 	{
@@ -75,6 +77,8 @@ public class RCClient extends Socket implements Runnable
 			System.out.println("null!");
 		gui.setImage(image);
 		System.out.println("finish");
+		writer.println("ack");
+		writer.flush();
 
 	}
 
@@ -105,6 +109,21 @@ public class RCClient extends Socket implements Runnable
 	@Override
 	public void run() 
 	{
+		try
+		{
+		Thread.sleep(1000);
+		writer = new PrintWriter(this.getOutputStream());
+		}
+		catch(IOException ex)
+		{
+			ex.printStackTrace();
+		} 
+		catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		writer.println("password");
+		writer.flush();
 		while(true)		
 		{
 			this.refresh();
