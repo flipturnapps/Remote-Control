@@ -29,7 +29,7 @@ public class RCMain
 			{
 				try
 				{
-					RCClient c = new RCClient(args[0]);
+					RCClient c = new RCClient(args[0],args[1]);
 					break;
 					
 				}

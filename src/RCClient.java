@@ -19,14 +19,15 @@ public class RCClient extends Socket implements Runnable
 	private Gui gui;
 	private InputStream inputStream;
 	private PrintWriter writer;
+	private String password;
 
-	public RCClient(String ip) throws UnknownHostException, IOException
+	public RCClient(String ip, String password) throws UnknownHostException, IOException
 	{
 		super(ip,RCServer.PORT);
 		new Thread(this).start();
 		System.out.println("connection");
 		gui = new Gui();
-
+		this.password = password;
 	}
 
 
@@ -122,7 +123,7 @@ public class RCClient extends Socket implements Runnable
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		writer.println("password");
+		writer.println(password);
 		writer.flush();
 		while(true)		
 		{

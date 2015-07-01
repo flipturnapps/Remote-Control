@@ -60,8 +60,12 @@ public class RCServer extends ServerSocket
 				try {
 					line = reader.readLine();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					if(shouldListenToClient)
+					{
+					killSelf();
+					
+					return;
+					}
 				}
 				if(line != null)
 					useClientMessage(line);
@@ -195,6 +199,15 @@ public class RCServer extends ServerSocket
 
 	public void killSelf() 
 	{
+		shouldListenToClient = false;
+		continueUpdates = false;
+		startUpdates = true;
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		try
 		{
 			socket.close();
