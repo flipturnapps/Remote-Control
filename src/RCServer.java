@@ -68,7 +68,7 @@ public class RCServer extends ServerSocket implements Runnable
 		rect = new Rectangle(dim);
 		output = new File("pic.png");		
 
-		Iterator<ImageWriter>writers =  ImageIO.getImageWritersByFormatName("jpg");
+		Iterator<ImageWriter>writers =  ImageIO.getImageWritersByFormatName("png");
 		writer = (ImageWriter) writers.next();
 
 		param = writer.getDefaultWriteParam();

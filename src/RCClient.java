@@ -24,13 +24,19 @@ public class RCClient extends Socket implements Runnable
 		new Thread(this).start();
 		System.out.println("connection");
 		gui = new Gui();
-		inputStream = this.getInputStream();
+		
 	}
 
 
 	public void refresh() 
 	{		
 		System.out.println("start");
+		try {
+			inputStream = this.getInputStream();
+		} catch (IOException e3) {
+			// TODO Auto-generated catch block
+			e3.printStackTrace();
+		}
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		try {
 			readInputToStream(stream, 8);
