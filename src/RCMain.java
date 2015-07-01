@@ -8,17 +8,7 @@ public class RCMain
 
 	public static void main(String[] args) throws UnknownHostException, IOException 
 	{
-		float compression = 0;
-		boolean fail = false;
-		try
-		{
-		compression = Float.parseFloat(args[0]);
-		}
-		catch(Exception ex)
-		{
-			fail = true;
-		}
-		if(fail)
+		if(args.length > 0)
 		{
 			System.out.println("client");
 			while(true)
@@ -44,7 +34,7 @@ public class RCMain
 		else
 		{
 			System.out.println("server");
-			new RCServer(compression);
+			new RCServer();
 		}			
 	}
 	public static byte[] longToBytes(long l)

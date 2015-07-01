@@ -26,18 +26,16 @@ public class RCServer extends ServerSocket implements Runnable
 {
 
 	public static final int PORT = 12347;
-	public static final int BUFFER_SIZE = (int) Math.pow(2, 14);
-	private float compression;
+	public static final int BUFFER_SIZE = 1024;//(int) Math.pow(2, 14);
 	private Socket socket;
 	private Robot robot;
 	private Rectangle rect;
 	private File output;
 	private OutputStream outputStream;
 
-	public RCServer(float compression) throws IOException 
+	public RCServer() throws IOException 
 	{
 		super(PORT);
-		this.compression = compression;
 		new Thread(this).start();
 	}
 
@@ -83,15 +81,6 @@ public class RCServer extends ServerSocket implements Runnable
 	public void updateScreenshot()
 	{
 		BufferedImage image = robot.createScreenCapture(rect);
-
-		ImageOutputStream iis = null;
-		try {
-			iis = ImageIO.createImageOutputStream(output);
-		} catch (IOException e3) {
-			// TODO Auto-generated catch block
-			e3.printStackTrace();
-		}
-		  
 
 		try {
 			ImageIO.write(image, "png", output);

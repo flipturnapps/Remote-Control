@@ -38,15 +38,16 @@ public class RCClient extends Socket implements Runnable
 			e3.printStackTrace();
 		}
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		System.out.println("start bytes read");
 		try {
 			readInputToStream(stream, 8);
 		} catch (IOException e2) {
 			System.out.println("read exception bytes");
 			e2.printStackTrace();
-		}
+		}	
 		byte[] bytes = stream.toByteArray();
 		long byteCount = RCMain.bytesToLong(bytes);
-
+		System.out.println("the pic file will be " + byteCount + " long");
 		File outputFile = new File("pic.png");
 		FileOutputStream fos = null;
 		try {
@@ -82,25 +83,22 @@ public class RCClient extends Socket implements Runnable
 		byte[] buffer = new byte[RCServer.BUFFER_SIZE];
 		int readCount = 0;
 		long readBytes = 0;
-		readCount = inputStream.read(buffer);
-		System.out.println("read " + readCount + " bytes");
+
 		while(readBytes < bytes && readCount != -1)
 		{	
-			readBytes += readCount;
-			
-			fos.write(buffer, 0, readCount);
-			System.out.println("wrote " + readCount + " bytes");
-
 			readCount = inputStream.read(buffer);
 			readBytes += readCount;		
-			System.out.println("read " + readCount + " bytes");
+			System.out.println("read " + readCount + " bytes. " + (bytes - readBytes) + " bytes left to read.");
+
+			if(readCount != -1)
+			{
+				fos.write(buffer, 0, readCount);
+				System.out.println("wrote " + readCount + " bytes");	
+			}
 		}
+		fos.flush();
+		fos.close();
 
-
-		
-			fos.flush();
-			fos.close();
-		
 	}
 
 
