@@ -8,22 +8,9 @@ public class RCMain
 
 	public static void main(String[] args)
 	{
-		if(args.length <= 0)
+		if(args.length == 2)
 		{
-			System.out.println("Need args!!");
-			return;
-		}
-		boolean isClient = true;
-		try
-		{
-			isClient = 	args[0].replace(".", "~").split("~").length == 4;
-		}
-		catch(Exception ex)
-		{
-			isClient = false;
-		}
-		if(isClient)
-		{		
+			
 			System.out.println("client");
 			while(true)
 			{
@@ -45,7 +32,7 @@ public class RCMain
 				}
 			}
 		}
-		else
+		else if( args.length == 1)
 		{
 			System.out.println("server");
 			try {
@@ -54,7 +41,12 @@ public class RCMain
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}			
+		}	
+		else
+		{
+			System.out.println("Bad Args!");
+			return;
+		}
 	}
 	public static byte[] longToBytes(long l)
 	{
