@@ -3,11 +3,18 @@ import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 
 import javax.imageio.IIOImage;
@@ -21,15 +28,18 @@ public class RCServer extends ServerSocket implements Runnable
 {
 
 	public static final int PORT = 12347;
-	public RCServer() throws IOException 
+	private float compression;
+	public RCServer(float compression) throws IOException 
 	{
 		super(PORT);
+		this.compression = compression;
 		new Thread(this).start();
 	}
 
 	@Override
 	public void run()
 	{
+		System.out.println("gonna wait for client");
 		Socket socket = null;
 		try {
 			socket = this.accept();
@@ -37,14 +47,7 @@ public class RCServer extends ServerSocket implements Runnable
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
 		}
-		
-		Iterator<ImageWriter>writers =  ImageIO.getImageWritersByFormatName("jpg");
-		ImageWriter writer = (ImageWriter) writers.next();
-
-		ImageWriteParam param = writer.getDefaultWriteParam();
-
-		param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-		param.setCompressionQuality(0.1f);
+		System.out.println("got client");
 		Robot r = null;
 		try {
 			r = new Robot();
@@ -52,43 +55,79 @@ public class RCServer extends ServerSocket implements Runnable
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		PrintWriter pWriter = null;
+		BufferedImage image = r.createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
+		System.out.println("capture");
+		File output = new File("pic.png");
+		
+		
+		Iterator<ImageWriter>writers =  ImageIO.getImageWritersByFormatName("jpg");
+		ImageWriter writer = (ImageWriter) writers.next();
+
+		ImageWriteParam param = writer.getDefaultWriteParam();
+
+		param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+		param.setCompressionQuality(compression);
+		ImageOutputStream iis = null;
 		try {
-			pWriter = new PrintWriter(socket.getOutputStream());
-		} catch (IOException e1) {
+			iis = ImageIO.createImageOutputStream(output);
+		} catch (IOException e3) {
+			// TODO Auto-generated catch block
+			e3.printStackTrace();
+		}
+		writer.setOutput(iis);	   
+
+		try {
+			writer.write(null, new IIOImage(image, null, null), param);
+		} catch (IOException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+		System.out.println(output.length());
+		FileInputStream stream = null;
+		try {
+			stream = new FileInputStream(output);
+		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		while (true)
+		int readCount = 0;
+		byte[] buffer = new byte[1024];
+		while(true)
 		{
-			BufferedImage capture = r.createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
-			ByteArrayOutputStream stream = new ByteArrayOutputStream();
-			try
-			{
-				ImageOutputStream iis = ImageIO.createImageOutputStream(stream);
-				writer.setOutput(iis);	   
-
-				writer.write(null, new IIOImage(capture, null, null), param);
-				String send = "";
-				for(int i = 0; i < stream.toByteArray().length; i++)
-				{
-					send += stream.toByteArray()[i] + ",";
-				}
-				send = send.substring(0,send.length()-2);
-				pWriter.println(send);
-				pWriter.flush();
-			}
-			catch(IOException ex)
-			{
-				ex.printStackTrace();
-			}
 			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
+				readCount = stream.read(buffer);
+			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}		
+			if(readCount > 0)
+			{
+				try {
+					socket.getOutputStream().write(buffer, 0, readCount);
+					socket.getOutputStream().flush();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			else if (readCount == -1)
+				break;
+			System.out.println("wrote " + readCount + " bytes");
+		}
+		try {
+			stream.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			socket.getOutputStream().close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("all sent!");
+		System.out.println(output.length());
 	}
 
 }
