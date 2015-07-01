@@ -10,6 +10,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Iterator;
@@ -25,6 +26,7 @@ public class RCServer extends ServerSocket implements Runnable
 {
 
 	public static final int PORT = 12347;
+	public static final int BUFFER_SIZE = (int) Math.pow(2, 14);
 	private float compression;
 	private Socket socket;
 	private Robot robot;
@@ -32,6 +34,8 @@ public class RCServer extends ServerSocket implements Runnable
 	private File output;
 	private ImageWriter writer;
 	private ImageWriteParam param;
+	private OutputStream outputStream;
+
 	public RCServer(float compression) throws IOException 
 	{
 		super(PORT);
@@ -48,7 +52,12 @@ public class RCServer extends ServerSocket implements Runnable
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
 		}
-
+		try {
+			outputStream = socket.getOutputStream();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		try {
 			robot = new Robot();
 		} catch (AWTException e) {
@@ -72,7 +81,7 @@ public class RCServer extends ServerSocket implements Runnable
 		{
 			updateScreenshot();
 			try {
-				Thread.sleep(30000);
+				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -102,8 +111,13 @@ public class RCServer extends ServerSocket implements Runnable
 		System.out.println("bytes of file " + bytes);
 		byte[] bytesAsArray = RCMain.longToBytes(bytes);
 		ByteArrayInputStream bStream = new ByteArrayInputStream(bytesAsArray);
-		writeToOutputStream(bStream);
-		
+		try {
+			writeToOutputStream(bStream);
+		} catch (IOException e2) {
+			System.out.println("write exception bytes");
+			e2.printStackTrace();
+		}
+
 		FileInputStream stream = null;
 		try {
 			stream = new FileInputStream(output);
@@ -112,41 +126,31 @@ public class RCServer extends ServerSocket implements Runnable
 			e1.printStackTrace();
 		}
 		long startTime = System.currentTimeMillis();
-		writeToOutputStream(stream);
+		try {
+			writeToOutputStream(stream);
+		} catch (IOException e) {
+			System.out.println("write exception image");
+			e.printStackTrace();
+		}
 
 		System.out.println("all sent! It took " + ((System.currentTimeMillis()-startTime+0.0)/(1000+0.0) + " seconds"));
 	}
 
-	private void writeToOutputStream(InputStream stream)
+	private void writeToOutputStream(InputStream stream) throws IOException
 	{
 		int readCount;
-		byte[] buffer = new byte[1024];
-		while(true)
-		{
-			try
-			{
-				readCount = stream.read(buffer);
-				if(readCount != -1)
-				{
-					socket.getOutputStream().write(buffer, 0, readCount);
-					socket.getOutputStream().flush();
-				}
-				else
-					break;
-			}
-			catch(Exception ex)
-			{
-				System.out.println("gotta error");
-				break;
-			}
+		byte[] buffer = new byte[BUFFER_SIZE];
+		readCount = stream.read(buffer);
+		while(readCount != -1)
+		{				
+			outputStream.write(buffer, 0, readCount);
+			outputStream.flush();
+			readCount = stream.read(buffer);
 		}
-		try {
-			stream.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
+		stream.close();
+
 	}
-	
+
 
 }

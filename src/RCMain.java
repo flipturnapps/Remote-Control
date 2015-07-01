@@ -31,7 +31,7 @@ public class RCMain
 				}
 				catch(Exception ex)
 				{
-					System.out.println("Client connect failed");
+					System.out.println("Client connect failed. Retrying...");
 				}
 				try {
 					Thread.sleep(5000);

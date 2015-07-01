@@ -1,23 +1,22 @@
-import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
 import javax.imageio.ImageIO;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
 
 
 public class RCClient extends Socket implements Runnable
 {
 
 	private Gui gui;
+	private InputStream inputStream;
 
 	public RCClient(String ip) throws UnknownHostException, IOException
 	{
@@ -25,6 +24,7 @@ public class RCClient extends Socket implements Runnable
 		new Thread(this).start();
 		System.out.println("connection");
 		gui = new Gui();
+		inputStream = this.getInputStream();
 	}
 
 
@@ -32,10 +32,15 @@ public class RCClient extends Socket implements Runnable
 	{		
 		System.out.println("start");
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		readInputToStream(stream, 8);
+		try {
+			readInputToStream(stream, 8);
+		} catch (IOException e2) {
+			System.out.println("read exception bytes");
+			e2.printStackTrace();
+		}
 		byte[] bytes = stream.toByteArray();
 		long byteCount = RCMain.bytesToLong(bytes);
-		
+
 		File outputFile = new File("pic.png");
 		FileOutputStream fos = null;
 		try {
@@ -45,7 +50,12 @@ public class RCClient extends Socket implements Runnable
 			e1.printStackTrace();
 		}
 		System.out.println("starting reading");
-		readInputToStream(fos,byteCount);
+		try {
+			readInputToStream(fos,byteCount);
+		} catch (IOException e1) {
+			System.out.println("read exception image");
+			e1.printStackTrace();
+		}
 		System.out.println("try read image");
 		BufferedImage image = null;
 		try {
@@ -61,32 +71,21 @@ public class RCClient extends Socket implements Runnable
 
 	}
 
-	private void readInputToStream(OutputStream fos, long bytes)
+	private void readInputToStream(OutputStream fos, long bytes) throws IOException
 	{
-		byte[] buffer = new byte[1024];
+		byte[] buffer = new byte[RCServer.BUFFER_SIZE];
 		int readCount = 0;
 		long readBytes = 0;
-		while(readBytes < bytes)
-		{
-			try {
-				readCount = this.getInputStream().read(buffer);
-				readBytes += readCount;
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			if(readCount != -1)
-			{
-				try {
-					fos.write(buffer, 0, readCount);
-					fos.flush();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			else
-				break;
+		readCount = inputStream.read(buffer);
+		while(readBytes < bytes && readCount != -1)
+		{	
+			readBytes += readCount;
+			//System.out.println("read " + readCount + " bytes");
+			fos.write(buffer, 0, readCount);
+			fos.flush();
+			
+			readCount = inputStream.read(buffer);
+			readBytes += readCount;				
 		}
 		try {
 			fos.close();
