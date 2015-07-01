@@ -32,8 +32,6 @@ public class RCServer extends ServerSocket implements Runnable
 	private Robot robot;
 	private Rectangle rect;
 	private File output;
-	private ImageWriter writer;
-	private ImageWriteParam param;
 	private OutputStream outputStream;
 
 	public RCServer(float compression) throws IOException 
@@ -68,13 +66,7 @@ public class RCServer extends ServerSocket implements Runnable
 		rect = new Rectangle(dim);
 		output = new File("pic.png");		
 
-		Iterator<ImageWriter>writers =  ImageIO.getImageWritersByFormatName("png");
-		writer = (ImageWriter) writers.next();
-
-		param = writer.getDefaultWriteParam();
-
-		param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-		param.setCompressionQuality(compression);
+		
 
 
 		while(true)
@@ -99,10 +91,10 @@ public class RCServer extends ServerSocket implements Runnable
 			// TODO Auto-generated catch block
 			e3.printStackTrace();
 		}
-		writer.setOutput(iis);	   
+		  
 
 		try {
-			writer.write(null, new IIOImage(image, null, null), param);
+			ImageIO.write(image, "png", output);
 		} catch (IOException e2) {
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
