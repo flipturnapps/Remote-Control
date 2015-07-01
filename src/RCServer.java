@@ -73,7 +73,7 @@ public class RCServer extends ServerSocket implements Runnable
 		{
 			updateScreenshot();
 			try {
-				Thread.sleep(5000);
+				Thread.sleep(20000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -109,7 +109,7 @@ public class RCServer extends ServerSocket implements Runnable
 			System.out.println("write exception bytes");
 			e2.printStackTrace();
 		}
-
+		System.out.println("start send image");
 		FileInputStream stream = null;
 		try {
 			stream = new FileInputStream(output);
@@ -133,11 +133,14 @@ public class RCServer extends ServerSocket implements Runnable
 		int readCount;
 		byte[] buffer = new byte[BUFFER_SIZE];
 		readCount = stream.read(buffer);
-		while(readCount != -1)
-		{				
+		System.out.println("read " + readCount + " bytes from input");
+		while(readCount != -1)		
+		{	
 			outputStream.write(buffer, 0, readCount);
+			System.out.println("wrote " + readCount + " bytes");
 			outputStream.flush();
 			readCount = stream.read(buffer);
+			System.out.println("read " + readCount + " bytes from input");
 		}
 
 		stream.close();

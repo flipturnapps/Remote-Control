@@ -24,7 +24,7 @@ public class RCClient extends Socket implements Runnable
 		new Thread(this).start();
 		System.out.println("connection");
 		gui = new Gui();
-		
+
 	}
 
 
@@ -83,22 +83,24 @@ public class RCClient extends Socket implements Runnable
 		int readCount = 0;
 		long readBytes = 0;
 		readCount = inputStream.read(buffer);
+		System.out.println("read " + readCount + " bytes");
 		while(readBytes < bytes && readCount != -1)
 		{	
 			readBytes += readCount;
-			//System.out.println("read " + readCount + " bytes");
-			fos.write(buffer, 0, readCount);
-			fos.flush();
 			
+			fos.write(buffer, 0, readCount);
+			System.out.println("wrote " + readCount + " bytes");
+
 			readCount = inputStream.read(buffer);
-			readBytes += readCount;				
+			readBytes += readCount;		
+			System.out.println("read " + readCount + " bytes");
 		}
-		try {
+
+
+		
+			fos.flush();
 			fos.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
 	}
 
 
