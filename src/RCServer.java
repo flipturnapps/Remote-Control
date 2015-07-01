@@ -1,20 +1,17 @@
 import java.awt.AWTException;
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Iterator;
 
 import javax.imageio.IIOImage;
@@ -29,6 +26,12 @@ public class RCServer extends ServerSocket implements Runnable
 
 	public static final int PORT = 12347;
 	private float compression;
+	private Socket socket;
+	private Robot robot;
+	private Rectangle rect;
+	private File output;
+	private ImageWriter writer;
+	private ImageWriteParam param;
 	public RCServer(float compression) throws IOException 
 	{
 		super(PORT);
@@ -39,34 +42,47 @@ public class RCServer extends ServerSocket implements Runnable
 	@Override
 	public void run()
 	{
-		System.out.println("gonna wait for client");
-		Socket socket = null;
 		try {
 			socket = this.accept();
 		} catch (IOException e2) {
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
 		}
-		System.out.println("got client");
-		Robot r = null;
+
 		try {
-			r = new Robot();
+			robot = new Robot();
 		} catch (AWTException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		BufferedImage image = r.createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
-		System.out.println("capture");
-		File output = new File("pic.png");
-		
-		
-		Iterator<ImageWriter>writers =  ImageIO.getImageWritersByFormatName("jpg");
-		ImageWriter writer = (ImageWriter) writers.next();
+		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+		rect = new Rectangle(dim);
+		output = new File("pic.png");		
 
-		ImageWriteParam param = writer.getDefaultWriteParam();
+		Iterator<ImageWriter>writers =  ImageIO.getImageWritersByFormatName("jpg");
+		writer = (ImageWriter) writers.next();
+
+		param = writer.getDefaultWriteParam();
 
 		param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
 		param.setCompressionQuality(compression);
+
+
+		while(true)
+		{
+			updateScreenshot();
+			try {
+				Thread.sleep(30000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	public void updateScreenshot()
+	{
+		BufferedImage image = robot.createScreenCapture(rect);
+
 		ImageOutputStream iis = null;
 		try {
 			iis = ImageIO.createImageOutputStream(output);
@@ -82,7 +98,12 @@ public class RCServer extends ServerSocket implements Runnable
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
 		}
-		System.out.println(output.length());
+		long bytes = output.length();
+		System.out.println("bytes of file " + bytes);
+		byte[] bytesAsArray = RCMain.longToBytes(bytes);
+		ByteArrayInputStream bStream = new ByteArrayInputStream(bytesAsArray);
+		writeToOutputStream(bStream);
+		
 		FileInputStream stream = null;
 		try {
 			stream = new FileInputStream(output);
@@ -90,29 +111,34 @@ public class RCServer extends ServerSocket implements Runnable
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		int readCount = 0;
+		long startTime = System.currentTimeMillis();
+		writeToOutputStream(stream);
+
+		System.out.println("all sent! It took " + ((System.currentTimeMillis()-startTime+0.0)/(1000+0.0) + " seconds"));
+	}
+
+	private void writeToOutputStream(InputStream stream)
+	{
+		int readCount;
 		byte[] buffer = new byte[1024];
 		while(true)
 		{
-			try {
-				readCount = stream.read(buffer);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			if(readCount > 0)
+			try
 			{
-				try {
+				readCount = stream.read(buffer);
+				if(readCount != -1)
+				{
 					socket.getOutputStream().write(buffer, 0, readCount);
 					socket.getOutputStream().flush();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				}
+				else
+					break;
 			}
-			else if (readCount == -1)
+			catch(Exception ex)
+			{
+				System.out.println("gotta error");
 				break;
-			System.out.println("wrote " + readCount + " bytes");
+			}
 		}
 		try {
 			stream.close();
@@ -120,14 +146,7 @@ public class RCServer extends ServerSocket implements Runnable
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		try {
-			socket.getOutputStream().close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		System.out.println("all sent!");
-		System.out.println(output.length());
 	}
+	
 
 }
