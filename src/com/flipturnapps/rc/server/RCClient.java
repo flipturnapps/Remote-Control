@@ -12,5 +12,7 @@ public class RCClient extends ClientData
 	public RCClient(Socket socket, KServer<?> server) throws IOException {
 		super(socket, server);
 	}
+	
+	
 
 }

@@ -1,8 +1,10 @@
 package com.flipturnapps.rc.server;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Scanner;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
 public class ServerMain {
@@ -34,6 +36,7 @@ public class ServerMain {
 	while(true)
 	{
 		server.sendAll(scanner.nextLine());
+		
 	}
 	}
 

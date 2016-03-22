@@ -1,13 +1,19 @@
 package com.flipturnapps.rc.server;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+
+import javax.imageio.ImageIO;
 
 import com.flipturnapps.kevinLibrary.net.KServer;
 
 public class Server extends KServer<RCClient>
 {
-
+	byte[] bytes;
+	int place = 0;
 	public Server(int port) throws IOException 
 	{
 		super(port);
@@ -17,8 +23,25 @@ public class Server extends KServer<RCClient>
 	@Override
 	protected void newMessage(String message, RCClient client) 
 	{
-		// TODO Auto-generated method stub
+	
+		String[] split = message.split(",");
+		byte[] bytes = new byte[split.length];
+		for (int i = 0; i < bytes.length; i++)
+		{
+			bytes[i] = Byte.parseByte(split[i]);
+		}
+			try
+			{
+				BufferedImage img = ImageIO.read(new ByteArrayInputStream(bytes));
+				ImageIO.write(img, "png", new File("serv.png"));
+				System.out.println("dafsf");
+			}
+			catch (Exception ex)
+			{
+
+			}
 		
+			
 	}
 
 	@Override
