@@ -25,7 +25,7 @@ public class Server extends KServer<RCClient>
 	@Override
 	protected void newMessage(String message, RCClient client) 
 	{
-	
+	/*
 		String[] split = message.split(",");
 		byte[] bytes = new byte[split.length];
 		for (int i = 0; i < bytes.length; i++)
@@ -44,7 +44,7 @@ public class Server extends KServer<RCClient>
 
 			}
 		
-			
+			*/
 	}
 
 	@Override

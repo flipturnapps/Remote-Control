@@ -27,17 +27,19 @@ public class ServerFrame extends JFrame
 	}
 
 	private void readImage() {
+		BufferedImage img = null;
 		try {
-			BufferedImage img = ImageIO.read(new File("serv.png"));
+			 img = ImageIO.read(new File("serv.png"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 			if(imageSprite == null)
 				imageSprite = new ImageSprite(img);
 			else
 				imageSprite.setImage(img);
 			imageSprite.setAll(0, 0, sPanel.getWidth(), sPanel.getHeight());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
 	}
 	
 	public void repaint()

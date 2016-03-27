@@ -7,12 +7,12 @@ import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import javax.imageio.ImageIO;
 
@@ -96,28 +96,25 @@ public class Client extends KClient {
 		}
 		Rectangle rect = new Rectangle(0, 0, (int) dim.getWidth(), (int) dim.getHeight());
 		BufferedImage image = robot.createScreenCapture(rect);
+		String imgPath = "cli.png";
 		try {
-			ImageIO.write(image, "png", new File("cli.png"));
+			ImageIO.write(image, "png", new File(imgPath));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Path path = Paths.get("cli.png");
-		byte[] data = null;
+		 WritableRaster raster = image.getRaster();
+		 DataBufferByte dataBuff   = (DataBufferByte) raster.getDataBuffer();
+		 byte[] data = dataBuff.getData();
 		try {
-			data = Files.readAllBytes(path);
+			DataOutputStream out = new DataOutputStream(this.getOutputStream());
+			out.writeInt(data.length);
+
+			out.write(data);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		String line = "";
-		for(int i = 0; i < data.length; i++)
-		{
-			
-			line += data[i] + ",";
-		}
-		this.sendMessage(line);
-		
 		
 	}
 
