@@ -14,10 +14,12 @@ public class Server extends KServer<RCClient>
 {
 	byte[] bytes;
 	int place = 0;
+	private ServerFrame frame;
 	public Server(int port) throws IOException 
 	{
 		super(port);
-		// TODO Auto-generated constructor stub
+		frame = new ServerFrame();
+		frame.setVisible(true);
 	}
 
 	@Override
@@ -34,6 +36,7 @@ public class Server extends KServer<RCClient>
 			{
 				BufferedImage img = ImageIO.read(new ByteArrayInputStream(bytes));
 				ImageIO.write(img, "png", new File("serv.png"));
+				frame.repaint();
 				System.out.println("dafsf");
 			}
 			catch (Exception ex)
